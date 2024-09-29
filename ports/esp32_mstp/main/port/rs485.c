@@ -48,10 +48,9 @@ static const char *TAG = "RS485_initalize";
 
 /* Define pins for Uart1 */
 //Define pins vor UART1
-#define UART1_TXD           (4)
-#define UART1_RXD           (36)
-#define UART1_RTS           (32)
-
+#define UART1_TXD           (GPIO_NUM_4)
+#define UART1_RXD           (GPIO_NUM_36)
+#define UART1_RTS           (GPIO_NUM_32)
 #define BUF_SIZE            (512)
 
 /* buffer for storing received bytes - size must be power of two */
@@ -100,7 +99,7 @@ bool rs485_silence_elapsed(uint32_t interval)
  **************************************************************************/
 static uint16_t rs485_turnaround_time(void)
 {
-    ESP_LOGI(TAG,"rs485_turnaround_time");
+    //ESP_LOGI(TAG,"rs485_turnaround_time");
     /* delay after reception before transmitting - per MS/TP spec */
     /* wait a minimum  40 bit times since reception */
     /* at least 2 ms for errors: rounding, clock tick */
@@ -118,7 +117,7 @@ static uint16_t rs485_turnaround_time(void)
  **************************************************************************/
 bool rs485_turnaround_elapsed(void)
 {
-    ESP_LOGI(TAG,"rs485_turnaround_elapsed");
+    //ESP_LOGI(TAG,"rs485_turnaround_elapsed");
     return (mstimer_elapsed(&Silence_Timer) > rs485_turnaround_time());
 }
 
@@ -129,7 +128,7 @@ bool rs485_turnaround_elapsed(void)
  **************************************************************************/
 bool rs485_receive_error(void)
 {
-    ESP_LOGI(TAG,"rs485_receive_error: false");
+    //ESP_LOGI(TAG,"rs485_receive_error: false");
     return false;
 }
 
@@ -169,7 +168,7 @@ void Receive_Task(void)
 bool rs485_byte_available(uint8_t *data_register)
 {
     bool data_available = false; /* return value */
-   ESP_LOGI(TAG,"RS485_DataAvailable: Look if data is aviable:%d", data_available);
+   //ESP_LOGI(TAG,"RS485_DataAvailable: Look if data is aviable:%d", data_available);
 
     if (!FIFO_Empty(&Receive_Buffer)) {
         if (data_register) {
@@ -191,7 +190,7 @@ bool rs485_byte_available(uint8_t *data_register)
  **************************************************************************/
 void rs485_byte_send(uint8_t tx_byte)
 {
-    ESP_LOGI(TAG,"rs485_byte_send");
+    //ESP_LOGI(TAG,"rs485_byte_send");
     led_tx_on_interval(10);
     uart_write_bytes(UART_NUM_1, (const char*)&tx_byte, 1);
     rs485_silence_reset();
@@ -205,7 +204,7 @@ void rs485_byte_send(uint8_t tx_byte)
  **************************************************************************/
 bool rs485_byte_sent(void)
 {
-    ESP_LOGI(TAG,"rs485_byte_sent");
+    //ESP_LOGI(TAG,"rs485_byte_sent");
      esp_err_t err = uart_wait_tx_done(UART_NUM_1,100);
     if (err == ESP_OK)
     {
@@ -283,11 +282,13 @@ static void rs485_baud_rate_configure(void)
         .rx_flow_ctrl_thresh = 122,
         .source_clk = UART_SCLK_APB,
     };
-    ESP_LOGI(TAG, "Start Modem application test and configure UART.");
+    ESP_LOGI(TAG, "Configure UART");
     uart_driver_install(UART_NUM_1, BUF_SIZE * 2, 0, 0, NULL, 0);
     uart_param_config(UART_NUM_1, &uart1_config);
-    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_1, UART1_TXD, UART1_RXD, UART1_RTS, UART_PIN_NO_CHANGE));
+    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_1, UART1_TXD, UART1_RXD, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
     ESP_ERROR_CHECK(uart_set_mode(UART_NUM_1, UART_MODE_RS485_HALF_DUPLEX));
+    ESP_ERROR_CHECK(uart_set_hw_flow_ctrl(UART_NUM_1, UART_HW_FLOWCTRL_DISABLE,0));
+
 }
 
 /*************************************************************************
@@ -335,11 +336,11 @@ uint32_t rs485_baud_rate(void)
 void rs485_rts_enable(bool enable)
 {
     if (enable) {
-        ESP_ERROR_CHECK(uart_set_rts(UART_NUM_1,1));
-        ESP_LOGI(TAG, "RTS_Enable");
+         gpio_set_level(UART1_RTS, 1);
+        //ESP_LOGI(TAG, "RTS_Enable");
     } else {
-        ESP_ERROR_CHECK(uart_set_rts(UART_NUM_1,2));
-        ESP_LOGI(TAG, "RTS_Disable");
+         gpio_set_level(UART1_RTS, 0);
+        //ESP_LOGI(TAG, "RTS_Disable");
     }
 }
 
@@ -354,11 +355,11 @@ void rs485_init(void)
 /*     uint8_t tx_byte = 0X11;
     uart_write_bytes(UART_NUM_1, (const char*)&tx_byte, 1); */
     // USART_Cmd(USART2, ENABLE);
-    vTaskDelay(5000/portTICK_PERIOD_MS); 
+    vTaskDelay(100/portTICK_PERIOD_MS); 
     //xTaskCreate(Receive_Task, "Receive", 512, NULL, 3,NULL);
     //Receive_Task();
 
-
+    gpio_set_direction(UART1_RTS, GPIO_MODE_OUTPUT);
     FIFO_Init(&Receive_Buffer, &Receive_Buffer_Data[0],
         (unsigned)sizeof(Receive_Buffer_Data));
 
