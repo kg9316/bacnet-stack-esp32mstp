@@ -270,19 +270,7 @@ void led_init(void)
 {
     //all lights configured on ESP32. 
 
-    /* Configure the Receive LED on MS/TP board */
-    gpio_pad_select_gpio(TX_LED);
-    gpio_set_direction(TX_LED, GPIO_MODE_OUTPUT);
-    /* Configure the Transmit LED on MS/TP board */
-    gpio_pad_select_gpio(RX_LED);
-    gpio_set_direction(RX_LED, GPIO_MODE_OUTPUT);
-    /* Configure the LD4 on Discovery board */
-    gpio_pad_select_gpio(LD4);
-    gpio_set_direction(LD4, GPIO_MODE_OUTPUT);
-    /* Configure the LD3 on Discovery board */
-    gpio_pad_select_gpio(LD3);
-    gpio_set_direction(LD3, GPIO_MODE_OUTPUT);
-    /* Enable the GPIO_LED Clock */
+   
 
     led_tx_on();
     led_rx_on();

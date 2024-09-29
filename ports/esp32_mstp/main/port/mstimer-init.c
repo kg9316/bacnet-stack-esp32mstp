@@ -146,8 +146,8 @@ void mstimer_init(void)
 {
 
     /* Configure the Receive LED */
-    gpio_pad_select_gpio(ms_led);
-    gpio_set_direction(ms_led, GPIO_MODE_OUTPUT);
+   // gpio_pad_select_gpio(ms_led);
+   // gpio_set_direction(ms_led, GPIO_MODE_OUTPUT);
     
     // vTaskDelay(2000 / portTICK_PERIOD_MS);
 

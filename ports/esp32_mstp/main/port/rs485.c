@@ -48,9 +48,9 @@ static const char *TAG = "RS485_initalize";
 
 /* Define pins for Uart1 */
 //Define pins vor UART1
-#define UART1_TXD           (23)
-#define UART1_RXD           (22)
-#define UART1_RTS           (18)
+#define UART1_TXD           (4)
+#define UART1_RXD           (36)
+#define UART1_RTS           (32)
 
 #define BUF_SIZE            (512)
 
@@ -151,7 +151,7 @@ void Receive_Task(void)
 {
    uint8_t data_byte;
    ESP_LOGI(TAG,"looking for uart darta");
-   uart_read_bytes(UART_NUM_1, &data_byte, 1, 100 / portTICK_RATE_MS); 
+   uart_read_bytes(UART_NUM_1, &data_byte, 1, 100 / portTICK_PERIOD_MS); 
    (void)FIFO_Put(&Receive_Buffer, data_byte);
 
     // if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) {
