@@ -19,6 +19,7 @@
 // #include "esp_wifi.h"
 // #include "esp_event_loop.h"
 #include "nvs_flash.h"
+#include "esp_log.h"
 
 // #include "driver/gpio.h"
 
@@ -39,7 +40,7 @@ int app_main(void)
     mstimer_init();
     led_init();
     bacnet_init();
-    mstimer_set(&Blink_Timer, 125);
+    mstimer_set(&Blink_Timer, 500);
     for (;;) {
         if (mstimer_expired(&Blink_Timer)) {
             mstimer_reset(&Blink_Timer);
@@ -47,6 +48,7 @@ int app_main(void)
         }
         led_task();
         bacnet_task();
+        vTaskDelay(1);
     }
 }
 

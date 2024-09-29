@@ -35,48 +35,18 @@
 #include "freertos/task.h"
 #include "driver/gpio.h"
 
+#include "esp_timer.h"
+
+
 /* counter for the various timers */
 static volatile unsigned long Millisecond_Counter;
 static volatile struct mstimer_callback_data_t *Callback_Head;
 
-#define ms_led 14
-
-/**
- * Activate the LED
- */
-static void timer_debug_on(void)
-{
-    gpio_set_level(ms_led, 1);
-}
-
-/**
- * Deactivate the LED
- */
-static void timer_debug_off(void)
-{
-    gpio_set_level(ms_led, 0);
-}
-
-/**
- * Toggle the state of the debug LED
- */
-static void timer_debug_toggle(void)
-{
-    static bool state = false;
-
-    if (state) {
-        timer_debug_off();
-        state = false;
-    } else {
-        timer_debug_on();
-        state = true;
-    }
-}
 
 /**
  * Handles the interrupt from the timer
  */
-void SysTick_Handler(void)
+void SysTick_Handler(void* arg)
 {
     struct mstimer_callback_data_t *cb;
 
@@ -92,7 +62,6 @@ void SysTick_Handler(void)
         }
         cb = cb->next;
     }
-    timer_debug_toggle();
 }
 
 /**
@@ -105,39 +74,7 @@ unsigned long mstimer_now(void)
     return Millisecond_Counter;
 }
 
-/**
- * Configures and enables a repeating callback function
- *
- * @param cb - pointer to a #mstimer_callback_data_t
- * @param callback - pointer to a #timer_callback_function function
- * @param milliseconds - how often to call the function
- *
- * @return true if successfully added and enabled
- */
-void mstimer_callback(struct mstimer_callback_data_t *new_cb,
-    mstimer_callback_function callback,
-    unsigned long milliseconds)
-{
-    struct mstimer_callback_data_t *cb;
 
-    if (new_cb) {
-        new_cb->callback = callback;
-        mstimer_set(&new_cb->timer, milliseconds);
-    }
-    if (Callback_Head) {
-        cb = (struct mstimer_callback_data_t *)Callback_Head;
-        while (cb) {
-            if (!cb->next) {
-                cb->next = new_cb;
-                break;
-            } else {
-                cb = cb->next;
-            }
-        }
-    } else {
-        Callback_Head = new_cb;
-    }
-}
 
 /**
  * Timer setup for 1 millisecond timer
@@ -145,17 +82,17 @@ void mstimer_callback(struct mstimer_callback_data_t *new_cb,
 void mstimer_init(void)
 {
 
-    /* Configure the Receive LED */
-   // gpio_pad_select_gpio(ms_led);
-   // gpio_set_direction(ms_led, GPIO_MODE_OUTPUT);
-    
-    // vTaskDelay(2000 / portTICK_PERIOD_MS);
 
-    // /* Setup SysTick Timer for 1ms interrupts  */
-    // if (SysTick_Config(SystemCoreClock / 1000)) {
-    //     /* Capture error */
-    //     while (1)
-    //         ; 
-    // }
-    
+ const esp_timer_create_args_t periodic_timer_args = {
+            .callback = &SysTick_Handler,
+            /* name is optional, but may help identify the timer when debugging */
+            .name = "periodic"
+    };
+
+    esp_timer_handle_t periodic_timer;
+    ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
+    /* The timer has been created but is not running yet */
+
+     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 1000));
 }
+
