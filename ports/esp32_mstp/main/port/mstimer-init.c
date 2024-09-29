@@ -74,6 +74,31 @@ unsigned long mstimer_now(void)
     return Millisecond_Counter;
 }
 
+void mstimer_callback(struct mstimer_callback_data_t *new_cb,
+    mstimer_callback_function callback,
+    unsigned long milliseconds)
+{
+    struct mstimer_callback_data_t *cb;
+
+    if (new_cb) {
+        new_cb->callback = callback;
+        mstimer_set(&new_cb->timer, milliseconds);
+    }
+    if (Callback_Head) {
+        cb = (struct mstimer_callback_data_t *)Callback_Head;
+        while (cb) {
+            if (!cb->next) {
+                cb->next = new_cb;
+                break;
+            } else {
+                cb = cb->next;
+            }
+        }
+    } else {
+        Callback_Head = new_cb;
+    }
+}
+
 
 
 /**

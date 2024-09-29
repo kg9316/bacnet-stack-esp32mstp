@@ -46,7 +46,7 @@
 #include "bacnet/basic/sys/ringbuf.h"
 #include "bacnet/datalink/crc.h"
 #include "bacnet/datalink/mstpdef.h"
-#include "port/include/automac.h"
+#include "automac.h"
 #include "bacnet/basic/object/device.h"
 
 /* This file has been customized for use with small microprocessors */

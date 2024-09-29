@@ -29,18 +29,22 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
+#include "driver/gpio.h"
 
 char *BACnet_Version = "1.0";
 #define PRINT_ENABLED
 
 int app_main(void)
 {
+
+    //gpio_set_direction(32, GPIO_MODE_OUTPUT);
+    //gpio_set_level(32, 1);
     struct mstimer Blink_Timer;
 
     mstimer_init();
     led_init();
     bacnet_init();
-    mstimer_set(&Blink_Timer, 500);
+    mstimer_set(&Blink_Timer, 5000);
     for (;;) {
         if (mstimer_expired(&Blink_Timer)) {
             mstimer_reset(&Blink_Timer);
